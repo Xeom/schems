@@ -32,13 +32,8 @@ int vec3_vol(vec3 a);
 
 typedef int16_t block_t;
 
-struct schematic
-{
-    int width, height, length;
-
-    block_t blocks[];
-};
-typedef struct schematic schem
+struct schematic;
+typedef struct schematic schem;
 
 schem *schem_init(int x, int y, int z);
 schem *schem_copy(schem *schem);
