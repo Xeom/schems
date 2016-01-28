@@ -43,6 +43,8 @@ schem *schem_copy(schem *schem)
     int i;
     for (i = 0; i < vec3_vol(ret->size); i++)
 	ret->blocks[i] = schem->blocks[i];
+
+    return ret;
 }
 
 void schem_kill(schem *schem)
