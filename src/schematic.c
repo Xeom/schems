@@ -171,12 +171,7 @@ int schem_insert(schem *into, vec3 offset, schem *from)
 {
 	return 0; // TODO
 }
-
-
-	int result = a.x * a.x;
-	result    += a.y * a.y;
-	result    += a.z * a.z;
-	return result;block_t _block_rotate(block_t block, vec3 dirs)
+block_t _block_rotate(block_t block, vec3 dirs)
 {
 	int8_t blockid = (int8_t)(block & 0xff00 >> 8);
 	int8_t data    = (int8_t)(block & 0x000f);
@@ -204,14 +199,15 @@ block_t block_rotate(block_t block, vec3 dirs)
 
 
 
-void 2d_rotate(int *x, int *y, int dir)
+void rotate_2d(int *x, int *y, int dir)
 {
+	int xOrig;
 	switch (dir)
 	{
 	case 0:
 		break;
 	case 1:
-		int xOrig = *x;
+		xOrig = *x;
 		*x = *y;
 		*y = -xOrig;
 		break;
@@ -220,30 +216,32 @@ void 2d_rotate(int *x, int *y, int dir)
 		*y = -*y;
 		break;
 	case 3:
-		int xOrig = *x;
+		xOrig = *x;
 		*x = -*y;
 		*y = xOrig;
 		break;
 	}
 }
 
-vec3 3d_rotate(vec3 vec, vec3 dirs)
+vec3 rotate_3d(vec3 vec, vec3 dirs)
 {
-	2d_rotate(&vec.z, &vec.y, dirs.x);
-	2d_rotate(&vec.x, &vec.z, dirs.y);
-	2d_rotate(&vec.x, &vec.y, dirs.z);
+	rotate_2d(&vec.z, &vec.y, dirs.x);
+	rotate_2d(&vec.x, &vec.z, dirs.y);
+	rotate_2d(&vec.x, &vec.y, dirs.z);
+
+	return vec;
 }
 
 schem *schem_rotate(schem *schem, vec3 dirs)
 {
 	vec3 size = schem_size(schem);
-	vec3 newsize = 3d_rotate(size, dirs);
+	vec3 newsize = rotate_3d(size, dirs);
 
-	schem *newschem = schem_init(vec3_abs(newsize));
+	struct schematic *newschem = schem_init(vec3_abs(newsize));
 
-	vec3 incrx = 3d_rotate({1, 0, 0}, dirs);
-	vec3 incry = 3d_rotate({0, 1, 0}, dirs);
-	vec3 incrz = 3d_rotate({0, 0, 1}, dirs);
+	vec3 incrx = rotate_3d((vec3) {1, 0, 0}, dirs);
+	vec3 incry = rotate_3d((vec3) {0, 1, 0}, dirs);
+	vec3 incrz = rotate_3d((vec3) {0, 0, 1}, dirs);
 
 	vec3 cur = {0, 0, 0};
 
@@ -253,17 +251,17 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 		cur.y = cur.y % size.y;
 		for (int z = 0; z < size.z; ++z)
 		{
-			cur = vec3_add(cur, incz);
+			cur = vec3_add(cur, incrz);
 			cur.z = cur.z % size.z;
-			for (int x = 0; x < size.x, ++x)
+			for (int x = 0; x < size.x; ++x)
 			{
-				cur = vec3_add(cur, incx);
+				cur = vec3_add(cur, incrx);
 				cur.x = cur.x % size.x;
 
-				vec3 index = vec3_sub(cur, vec3_min(size, {0, 0, 0}));
-				newschem->blocks[YZX_INDEX(index)] =
+				vec3 index = vec3_sub(cur, vec3_min(size, (vec3) {0, 0, 0}));
+				newschem->blocks[YZX_INDEX(newsize, index)] =
 					block_rotate(
-						schem.blocks[YZX_INDEX((vec3){x, y, z})], dirs)
+						     schem->blocks[YZX_INDEX(schem->size, vec3_init(x, y, z))], dirs);
 			}
 		}
 	}
