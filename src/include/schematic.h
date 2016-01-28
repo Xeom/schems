@@ -5,7 +5,8 @@
 #define SCHEMATIC_H
 
 
-struct vec3i {
+struct vec3i
+{
     int x, y, z;
 };
 typedef struct vec3i vec3;
