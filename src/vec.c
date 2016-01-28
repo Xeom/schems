@@ -1,4 +1,4 @@
-#include "include/schematic.h"
+#include "include/vec.h"
 
 /* Binary operators */
 
@@ -48,6 +48,8 @@ vec3 vec3_min(vec3 a, vec3 b)
 	result.x = min(a.x, b.x);
 	result.y = min(a.y, b.y);
 	result.z = min(a.z, b.z);
+
+	return result;
 }
 
 vec3 vec3_max(vec3 a, vec3 b)
@@ -56,6 +58,8 @@ vec3 vec3_max(vec3 a, vec3 b)
 	result.x = max(a.x, b.x);
 	result.y = max(a.y, b.y);
 	result.z = max(a.z, b.z);
+
+	return result;
 }
 
 /* Unary operators */
@@ -66,6 +70,8 @@ vec3 vec3_abs(vec3 a)
 	result.x = abs(a.x);
 	result.y = abs(a.y);
 	result.z = abs(a.z);
+
+	return result;
 }
 
 vec3 vec3_neg(vec3 a)
@@ -74,6 +80,8 @@ vec3 vec3_neg(vec3 a)
 	result.x = -a.x;
 	result.y = -a.y;
 	result.z = -a.z;
+
+	return result;
 }
 
 vec3 vec3_scale(vec3 a, int b)
@@ -82,6 +90,8 @@ vec3 vec3_scale(vec3 a, int b)
 	result.x = b * a.x;
 	result.y = b * a.y;
 	result.z = b * a.z;
+
+	return result;
 }
 
 /* vec3->int functions */
@@ -96,5 +106,6 @@ int vec3_dot(vec3 a, vec3 b)
 	int result = a.x * b.x;
 	result    += a.y * b.y;
 	result    += a.z * b.z;
+
 	return result;
 }
