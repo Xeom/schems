@@ -19,6 +19,7 @@ struct schematic
 
     block_t blocks[];
 };
+typedef struct schematic schem;
 
 schem *schem_init(vec3 size)
 {
@@ -75,11 +76,22 @@ int schem_set(schem *schem, vec3 coord, block_t block)
 }
 
 
-int schem_resize(schem *schem, vec3 size);
+schem *schem_resize(schem *schem, vec3 size) {
+
+    struct schematic *ret = schem_init(size);
+
+    if (ret == NULL)
+        return -1;
+
+    
+
+    return 0;
+}
+
+schem *schem_stack(schem *schem, vec3 counts);
+schem *schem_stacking_resize(schem *schem, vec3 size);
 int schem_shift(schem *schem, vec3 offset);
-int schem_stack(schem *schem, vec3 counts);
 int schem_flip(schem *schem, vec3 dirs); // Flips n times on each axis.
 int schem_rotate(schem *schem, vec3 dirs); // Rotates by pi/2 n times on each axis.
 int schem_fill(schem *schem, vec3 offset, vec3 size, block_t block);
 int schem_insert(schem *into, vec3 offset, schem *from);
-int schem_stacking_resize(schem *schem, vec3 size);
