@@ -173,5 +173,109 @@ int schem_insert(schem *into, vec3 offset, schem *from)
 	return 0; // TODO
 }
 
+
+	int result = a.x * a.x;
+	result    += a.y * a.y;
+	result    += a.z * a.z;
+	return result;block_t _block_rotate(block_t block, vec3 dirs)
+{
+	int8_t blockid = (int8_t)(block & 0xff00 >> 8);
+	int8_t data    = (int8_t)(block & 0x000f);
+
+	switch (blockid)
+	{
+		/* Do this part when without means to commit suicide */
+	}
+
+	return (blockid << 8) | data;
+}
+
+block_t block_rotate(block_t block, vec3 dirs)
+{
+	int8_t blockid = (int8_t)(block & 0xff00 >> 8);
+	int8_t data    = (int8_t)(block & 0x000f);
+
+	switch (blockid)
+	{
+		/* Do this part when without means to commit suicide */
+	}
+
+	return (blockid << 8) | data;
+}
+
+
+
+void 2d_rotate(int *x, int *y, int dir)
+{
+	switch (dir)
+	{
+	case 0:
+		break;
+	case 1:
+		int xOrig = *x;
+		*x = *y;
+		*y = -xOrig;
+		break;
+	case 2:
+		*x = -*x;
+		*y = -*y;
+		break;
+	case 3:
+		int xOrig = *x;
+		*x = -*y;
+		*y = xOrig;
+		break;
+	}
+}
+
+vec3 3d_rotate(vec3 vec, vec3 dirs)
+{
+	2d_rotate(&vec.z, &vec.y, dirs.x);
+	2d_rotate(&vec.x, &vec.z, dirs.y);
+	2d_rotate(&vec.x, &vec.y, dirs.z);
+}
+
+schem *schem_rotate(schem *schem, vec3 dirs)
+{
+	vec3 size = schem_size(schem);
+	vec3 newsize = 3d_rotate(size, dirs);
+
+	schem *newschem = schem_init(vec3_abs(newsize));
+
+	vec3 incrx = 3d_rotate({1, 0, 0}, dirs);
+	vec3 incry = 3d_rotate({0, 1, 0}, dirs);
+	vec3 incrz = 3d_rotate({0, 0, 1}, dirs);
+
+	vec3 cur = {0, 0, 0};
+
+	for (int y = 0; y < size.y; ++y)
+	{
+		cur = vec3_add(cur, incry);
+		cur.y = cur.y % size.y;
+		for (int z = 0; z < size.z; ++z)
+		{
+			cur = vec3_add(cur, incz);
+			cur.z = cur.z % size.z;
+			for (int x = 0; x < size.x, ++x)
+			{
+				cur = vec3_add(cur, incx);
+				cur.x = cur.x % size.x;
+
+				vec3 index = vec3_sub(cur, vec3_min(size, {0, 0, 0}));
+				newschem->blocks[YZX_INDEX(index)] =
+					block_rotate(
+						schem.blocks[YZX_INDEX((vec3){x, y, z})], dirs)
+			}
+		}
+	}
+
+	return newschem;
+}
+
+	
+
+// Rotates by pi/2 n times on each axis.
+
+
 schem *schem_rotate(schem *schem, vec3 dirs); // Rotates by pi/2 n times on each axis.
 
