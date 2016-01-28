@@ -9,7 +9,7 @@ typedef int16_t block_t;
 struct schematic;
 typedef struct schematic schem;
 
-schem *schem_init(int x, int y, int z);
+schem *schem_init(vec3 size);
 schem *schem_copy(schem *schem);
 void schem_kill(schem *schem);
 
