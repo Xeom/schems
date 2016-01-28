@@ -5,11 +5,17 @@
 
 #include <stdlib.h>
 
-#define SCHEM_YZX_LOOP(size, code)      \
-    int x, y, z;                        \
-    for (y = 0; y < size.y; y++)        \
-	for (z = 0; z < size.z; z++)    \
-	    for (x = 0; x < size.x; x++)
+#define SCHEM_YZX_LOOP(size, code)             \
+    do {                                       \
+        int x, y, z;                           \
+        for (y = 0; y < size.y; y++)           \
+            for (z = 0; z < size.z; z++)       \
+                for (x = 0; x < size.x; x++) { \
+                    vec3 pos = {x, y, z};      \
+                    code                       \
+                }                              \
+    } while (0)
+                    
 
 #define YZX_INDEX(size, loc) (loc.x + size.x*(loc.z + size.z*(loc.y)))
 
@@ -81,11 +87,15 @@ schem *schem_resize(schem *schem, vec3 size) {
     struct schematic *ret = schem_init(size);
 
     if (ret == NULL)
-        return -1;
+        return ret;
 
-    
+    SCHEM_YZX_LOOP(size,
+                   int src_index = YZX_INDEX(ret->size, pos);
+                   int dst_index = YZX_INDEX(size, pos);
+                   ret->blocks[dst_index] = ret->blocks[src_index];
+                   );
 
-    return 0;
+    return ret;
 }
 
 schem *schem_stack(schem *schem, vec3 counts);
