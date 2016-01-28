@@ -30,5 +30,6 @@ vec3 vec3_scale(vec3 a, int b);
 
 int vec3_sqr(vec3 a); /* x^2 + y^2 + z^2 */
 int vec3_dot(vec3 a, vec3 b);
+int vec3_vol(vec3 a);
 
 #endif /* VEC_H */
