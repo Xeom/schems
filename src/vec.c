@@ -1,0 +1,100 @@
+#include "include/schematic.h"
+
+/* Binary operators */
+
+vec3 vec3_add(vec3 a, vec3 b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = a.x + b.x;
+	result.y = a.y + b.y;
+	result.z = a.z + b.z;
+
+	return result;
+}
+
+vec3 vec3_sub(vec3 a, vec3 b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = a.x - b.x;
+	result.y = a.y - b.y;
+	result.z = a.z - b.z;
+
+	return result;
+}
+
+vec3 vec3_mul(vec3 a, vec3 b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = a.x * b.x;
+	result.y = a.y * b.y;
+	result.z = a.z * b.z;
+
+	return result;
+}
+
+vec3 vec3_div(vec3 a, vec3 b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = a.x / b.x;
+	result.y = a.y / b.y;
+	result.z = a.z / b.z;
+
+	return result;
+}
+
+vec3 vec3_min(vec3 a, vec3 b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = min(a.x, b.x);
+	result.y = min(a.y, b.y);
+	result.z = min(a.z, b.z);
+}
+
+vec3 vec3_max(vec3 a, vec3 b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = max(a.x, b.x);
+	result.y = max(a.y, b.y);
+	result.z = max(a.z, b.z);
+}
+
+/* Unary operators */
+
+vec3 vec3_abs(vec3 a)
+{
+	vec3 result = {0, 0, 0};
+	result.x = abs(a.x);
+	result.y = abs(a.y);
+	result.z = abs(a.z);
+}
+
+vec3 vec3_neg(vec3 a)
+{
+	vec3 result = {0, 0, 0};
+	result.x = -a.x;
+	result.y = -a.y;
+	result.z = -a.z;
+}
+
+vec3 vec3_scale(vec3 a, int b)
+{
+	vec3 result = {0, 0, 0};
+	result.x = b * a.x;
+	result.y = b * a.y;
+	result.z = b * a.z;
+}
+
+/* vec3->int functions */
+
+int vec3_sqr(vec3 a)
+{
+	return vec3_dot(a, a);
+}
+
+int vec3_dot(vec3 a, vec3 b)
+{
+	int result = a.x * b.x;
+	result    += a.y * b.y;
+	result    += a.z * b.z;
+	return result;
+}
