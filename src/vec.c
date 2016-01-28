@@ -102,7 +102,11 @@ vec3 vec3_scale(vec3 a, int b)
 
 int vec3_sqr(vec3 a)
 {
-	return vec3_dot(a, a);
+	int result = a.x * a.x;
+	result    += a.y * a.y;
+	result    += a.z * a.z;
+
+	return result;
 }
 
 int vec3_dot(vec3 a, vec3 b)
@@ -112,4 +116,9 @@ int vec3_dot(vec3 a, vec3 b)
 	result    += a.z * b.z;
 
 	return result;
+}
+
+int vec3_vol(vec3 a)
+{
+	return a.x * a.y * a.z;
 }
