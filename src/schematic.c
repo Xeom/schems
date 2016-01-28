@@ -146,15 +146,17 @@ schem *schem_flip(schem *schem, vec3 dirs)
 
 
 	dirs = vec3_mod(dirs, {2, 2, 2});
+        dirs = vec3_mul(dirs, {-1, -1, -1});
 
 	SCHEM_YZX_LOOP(schem->size,
 	               int src_index = YZX_INDEX(schem->size, pos);
-	               int dst_index = YZX_INDEX(schem->size, vec3_mul(pos, change));
+	               int dst_index = YZX_INDEX(schem->size, vec3_mul(pos, dirs));
 		       ret->blocks[dst_index] = schem->blocks[src_index];
 	               );
 
 	return ret;
 }
+
 schem *schem_rotate(schem *schem, vec3 dirs); // Rotates by pi/2 n times on each axis.
 schem *schem_fill(schem *schem, vec3 offset, vec3 size, block_t block);
 schem *schem_insert(schem *into, vec3 offset, schem *from);
