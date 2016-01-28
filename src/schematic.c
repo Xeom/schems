@@ -139,7 +139,7 @@ schem *schem_stacking_resize(schem *schem, vec3 size) {
 
 schem *schem_flip(schem *schem, vec3 dirs)
 {
-        struct schematic *ret = schem_init(schem->size);
+	struct schematic *ret = schem_init(schem->size);
 
 	if (ret == NULL)
 		return ret;
@@ -157,6 +157,21 @@ schem *schem_flip(schem *schem, vec3 dirs)
 	return ret;
 }
 
+int schem_fill(schem *schem, vec3 offset, vec3 size, block_t block)
+{
+	SCHEM_YZX_LOOP(size,
+		       vec3 dst_pos = vec3_add(pos, offset);
+		       schem->blocks[YZX_INDEX(schem->size, dst_pos)] = block;
+		       );
+
+	return 0;
+}
+
+int schem_insert(schem *into, vec3 offset, schem *from)
+{
+
+	return 0; // TODO
+}
+
 schem *schem_rotate(schem *schem, vec3 dirs); // Rotates by pi/2 n times on each axis.
-schem *schem_fill(schem *schem, vec3 offset, vec3 size, block_t block);
-schem *schem_insert(schem *into, vec3 offset, schem *from);
+

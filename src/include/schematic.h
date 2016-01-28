@@ -33,7 +33,7 @@ schem *schem_stacking_resize(schem *schem, vec3 size);
 schem *schem_shift(schem *schem, vec3 offset);
 schem *schem_flip(schem *schem, vec3 dirs); /* Flips n times on each axis. */
 schem *schem_rotate(schem *schem, vec3 dirs); /* Rotates by pi/2 n times on each axis. */
-schem *schem_fill(schem *schem, vec3 offset, vec3 size, block_t block);
-schem *schem_insert(schem *into, vec3 offset, schem *from);
+int schem_fill(schem *schem, vec3 offset, vec3 size, block_t block);
+int schem_insert(schem *into, vec3 offset, schem *from);
 
 #endif /* SCHEMATIC_H */
