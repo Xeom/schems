@@ -46,6 +46,16 @@ vec3 vec3_div(vec3 a, vec3 b)
 	return result;
 }
 
+vec3 vec3_mod(vec3 a, vec3 b)
+{
+	vec3 result;
+	result.x = a.x % b.x;
+	result.y = a.y % b.y;
+	result.z = a.z % b.z;
+
+	return result;
+}
+
 vec3 vec3_min(vec3 a, vec3 b)
 {
 	vec3 result;

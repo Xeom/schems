@@ -14,6 +14,7 @@ vec3 vec3_add(vec3 a, vec3 b);
 vec3 vec3_sub(vec3 a, vec3 b);
 vec3 vec3_mul(vec3 a, vec3 b);
 vec3 vec3_div(vec3 a, vec3 b);
+vec3 vec3_mod(vec3 a, vec3 b);
 
 /* * Min/max */
 vec3 vec3_min(vec3 a, vec3 b);
