@@ -145,8 +145,8 @@ schem *schem_flip(schem *schem, vec3 dirs)
 		return ret;
 
 
-	dirs = vec3_mod(dirs, {2, 2, 2});
-        dirs = vec3_mul(dirs, {-1, -1, -1});
+	dirs = vec3_mod(dirs, (vec3) {2, 2, 2});
+        dirs = vec3_mul(dirs, (vec3) {-1, -1, -1});
 
 	SCHEM_YZX_LOOP(schem->size,
 	               int src_index = YZX_INDEX(schem->size, pos);
@@ -169,7 +169,6 @@ int schem_fill(schem *schem, vec3 offset, vec3 size, block_t block)
 
 int schem_insert(schem *into, vec3 offset, schem *from)
 {
-
 	return 0; // TODO
 }
 
