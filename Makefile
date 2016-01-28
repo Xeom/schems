@@ -16,8 +16,8 @@ SRC=src
 INC=src/include
 
 # Source and header files.
-SRC_OBJS=test schematic
-INC_OBJS=
+SRC_OBJS=test schematic vec
+INC_OBJS=schematic vec
 
 OBJ_PATHS=$(addprefix $(SRC)/, $(addsuffix .o, $(SRC_OBJS)))
 SRC_PATHS=$(addprefix $(SRC)/, $(addsuffix .cpp, $(SRC_OBJS)))
@@ -29,7 +29,7 @@ CCFLAGS=-I$(INC) -g -Wall -Wextra -Wno-unused-parameter -Wformat -Wpedantic
 
 
 # Default rule for compiling object files.
-%.o: %.c
+%.o: %.c $(INC_PATHS)
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 

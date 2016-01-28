@@ -1,5 +1,9 @@
 #include "include/vec.h"
 
+#define min(a, b) ((a < b)? a : b)
+#define max(a, b) ((a > b)? a : b)
+#define abs(a) ((a >= 0)? a : -a)
+
 /* Binary operators */
 
 vec3 vec3_add(vec3 a, vec3 b)

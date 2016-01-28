@@ -4,6 +4,9 @@
 #ifndef SCHEMATIC_H
 #define SCHEMATIC_H
 
+#include <stdint.h>
+#include "vec.h"
+
 typedef int16_t block_t;
 
 struct schematic;
@@ -26,10 +29,10 @@ int schem_set(schem *schem, vec3 coord, block_t block);
 int schem_resize(schem *schem, vec3 size);
 int schem_shift(schem *schem, vec3 offset);
 int schem_stack(schem *schem, vec3 counts);
-int schem_flip(schem *schem, vec3 dirs); // Flips n times on each axis.
-int schem_rotate(schem *schem, vec3 dirs); // Rotates by pi/2 n times on each axis.
+int schem_flip(schem *schem, vec3 dirs); /* Flips n times on each axis. */
+int schem_rotate(schem *schem, vec3 dirs); /* Rotates by pi/2 n times on each axis. */
 int schem_fill(schem *schem, vec3 offset, vec3 size, block_t block);
 int schem_insert(schem *into, vec3 offset, schem *from);
 int schem_stacking_resize(schem *schem, vec3 size);
 
-#endif // SCHEMATIC_H
+#endif /* SCHEMATIC_H */
