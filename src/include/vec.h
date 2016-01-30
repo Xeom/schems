@@ -7,6 +7,9 @@ struct vec3i
 };
 typedef struct vec3i vec3;
 
+/* Because macros hate {} */
+vec3 vec3_init(int x, int y, int z);
+
 /* Binary operators */
 
 /* * Primary school maths class */

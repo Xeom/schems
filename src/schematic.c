@@ -145,8 +145,8 @@ schem *schem_flip(schem *schem, vec3 dirs)
 		return ret;
 
 
-	dirs = vec3_mod(dirs, {2, 2, 2});
-        dirs = vec3_mul(dirs, {-1, -1, -1});
+	dirs = vec3_mod(dirs, (vec3) {2, 2, 2});
+        dirs = vec3_mul(dirs, (vec3) {-1, -1, -1});
 
 	SCHEM_YZX_LOOP(schem->size,
 	               int src_index = YZX_INDEX(schem->size, pos);
@@ -170,10 +170,9 @@ block_t block_rotate(block_t block, vec3 dirs)
 	return (blockid << 8) | data;
 }
 
-
-
-void 2d_rotate(int *x, int *y, int dir)
+void rotate_2d(int *x, int *y, int dir)
 {
+	int xOrig;
 	switch (dir)
 	{
 	/* /  1  0 \
@@ -185,7 +184,7 @@ void 2d_rotate(int *x, int *y, int dir)
 	   \ -1  0 /
 	*/
 	case 1:
-		int xOrig = *x;
+		xOrig = *x;
 		*x = *y;
 		*y = -xOrig;
 		break;
@@ -200,18 +199,20 @@ void 2d_rotate(int *x, int *y, int dir)
 	   \ -1  0 /
 	*/
 	case 3:
-		int xOrig = *x;
+		xOrig = *x;
 		*x = -*y;
 		*y = xOrig;
 		break;
 	}
 }
 
-vec3 3d_rotate(vec3 vec, vec3 dirs)
+vec3 rotate_3d(vec3 vec, vec3 dirs)
 {
-	2d_rotate(&vec.z, &vec.y, dirs.x);
-	2d_rotate(&vec.x, &vec.z, dirs.y);
-	2d_rotate(&vec.x, &vec.y, dirs.z);
+	rotate_2d(&vec.z, &vec.y, dirs.x);
+	rotate_2d(&vec.x, &vec.z, dirs.y);
+	rotate_2d(&vec.x, &vec.y, dirs.z);
+
+	return vec;
 }
 
 schem *schem_rotate(schem *schem, vec3 dirs)
@@ -239,6 +240,7 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 		cur = vec3_add(cur, incry);
 		for (int z = 0; z < size.z; ++z)
 		{
+
 			cur = vec3_add(cur, incz);
 			for (int x = 0; x < size.x, ++x)
 			{
@@ -250,6 +252,7 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 				newschem->blocks[YZX_INDEX(newsizeabs, index)] =
 					block_rotate(schem.blocks[YZX_INDEX(
 						size, (vec3){x, y, z})], dirs);
+
 			}
 		}
 	}

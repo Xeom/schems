@@ -6,6 +6,11 @@
 
 /* Binary operators */
 
+vec3 vec3_init(int x, int y, int z)
+{
+	return (vec3) {x, y, z};
+}
+
 vec3 vec3_add(vec3 a, vec3 b)
 {
 	vec3 result;
