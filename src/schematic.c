@@ -157,39 +157,6 @@ schem *schem_flip(schem *schem, vec3 dirs)
 	return ret;
 }
 
-int schem_fill(schem *schem, vec3 offset, vec3 size, block_t block)
-{
-	SCHEM_YZX_LOOP(size,
-		       vec3 dst_pos = vec3_add(pos, offset);
-		       schem->blocks[YZX_INDEX(schem->size, dst_pos)] = block;
-		       );
-
-	return 0;
-}
-
-int schem_insert(schem *into, vec3 offset, schem *from)
-{
-
-	return 0; // TODO
-}
-
-
-	int result = a.x * a.x;
-	result    += a.y * a.y;
-	result    += a.z * a.z;
-	return result;block_t _block_rotate(block_t block, vec3 dirs)
-{
-	int8_t blockid = (int8_t)(block & 0xff00 >> 8);
-	int8_t data    = (int8_t)(block & 0x000f);
-
-	switch (blockid)
-	{
-		/* Do this part when without means to commit suicide */
-	}
-
-	return (blockid << 8) | data;
-}
-
 block_t block_rotate(block_t block, vec3 dirs)
 {
 	int8_t blockid = (int8_t)(block & 0xff00 >> 8);
@@ -209,17 +176,29 @@ void 2d_rotate(int *x, int *y, int dir)
 {
 	switch (dir)
 	{
+	/* /  1  0 \
+	   \  0  1 /
+	*/
 	case 0:
 		break;
+	/* /  0  1 \
+	   \ -1  0 /
+	*/
 	case 1:
 		int xOrig = *x;
 		*x = *y;
 		*y = -xOrig;
 		break;
+	/* / -1  0 \
+	   \  0 -1 /
+	*/
 	case 2:
 		*x = -*x;
 		*y = -*y;
 		break;
+	/* /  0 -1 \
+	   \ -1  0 /
+	*/
 	case 3:
 		int xOrig = *x;
 		*x = -*y;
@@ -238,10 +217,17 @@ vec3 3d_rotate(vec3 vec, vec3 dirs)
 schem *schem_rotate(schem *schem, vec3 dirs)
 {
 	vec3 size = schem_size(schem);
+	/* The shape of the new schematic is obtained via rotation */
 	vec3 newsize = 3d_rotate(size, dirs);
+	/* Get rid of negatives */
+	vec3 newsizeabs = vec3_abs(newsize);
 
-	schem *newschem = schem_init(vec3_abs(newsize));
+	schem *newschem = schem_init(newsizeabs);
 
+	/* These three variables represents what happens in the new
+	   schematic when you move in the x y or z directions in the
+	   old one.
+	*/
 	vec3 incrx = 3d_rotate({1, 0, 0}, dirs);
 	vec3 incry = 3d_rotate({0, 1, 0}, dirs);
 	vec3 incrz = 3d_rotate({0, 0, 1}, dirs);
@@ -251,20 +237,19 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 	for (int y = 0; y < size.y; ++y)
 	{
 		cur = vec3_add(cur, incry);
-		cur.y = cur.y % size.y;
 		for (int z = 0; z < size.z; ++z)
 		{
 			cur = vec3_add(cur, incz);
-			cur.z = cur.z % size.z;
 			for (int x = 0; x < size.x, ++x)
 			{
 				cur = vec3_add(cur, incx);
-				cur.x = cur.x % size.x;
-
-				vec3 index = vec3_sub(cur, vec3_min(size, {0, 0, 0}));
-				newschem->blocks[YZX_INDEX(index)] =
-					block_rotate(
-						schem.blocks[YZX_INDEX((vec3){x, y, z})], dirs)
+				cur = vec3_mod(cur, newsize);
+				/* If current index is negative make it positive */
+				vec3 curpos = vec3_mod(cur, newsizeabs);
+				/* Add the block to the new schematic */
+				newschem->blocks[YZX_INDEX(newsizeabs, index)] =
+					block_rotate(schem.blocks[YZX_INDEX(
+						size, (vec3){x, y, z})], dirs);
 			}
 		}
 	}
@@ -272,10 +257,33 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 	return newschem;
 }
 
-	
+void schem_fill(schem *schem, vec3 offset, vec3 size, block_t block)
+{
+	/* Get absolute values of input vectors */
+	offset = vec3_abs(offset);
+	size   = vec3_abs(size);
 
-// Rotates by pi/2 n times on each axis.
+	/* Ensure the region to be filled is contained within the schematic */
+	offset = vec3_min(schem.size, offset);
+	size   = vec3_min(vec3_sub(schem.size, offset), size);
 
+	/* Fill shit yo */
+	YZX_LOOP(size,
+		vec3 index = vec3_add(pos, offset);
+		schem.blocks[index] = block_t;
+		);
+}
 
-schem *schem_rotate(schem *schem, vec3 dirs); // Rotates by pi/2 n times on each axis.
+void schem_insert(schem *into, vec3 offset, schem *from)
+{
+	offset = vec3_abs(offset);
+	offset = vec3_min(into->size, offset);
+
+	vec3 wiggle = vec3_min(from->size, vec3_sub(into->size, offset));
+
+	YZX_LOOP(wiggle,
+			into->blocks[YZX_INDEX(into->size, pos)] =
+				from->blocks[YZX_INDEX(from->size, vec3_sum(offset, pos))];
+		);
+}
 
