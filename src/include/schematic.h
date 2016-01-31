@@ -9,7 +9,12 @@
 
 typedef int16_t block_t;
 
-struct schematic;
+struct schematic
+{
+	vec3 size;
+	block_t *blocks;
+};
+
 typedef struct schematic schem;
 
 schem *schem_init(vec3 size);

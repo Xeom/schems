@@ -19,16 +19,11 @@
 
 #define YZX_INDEX(size, loc) (loc.x + size.x*(loc.z + size.z*(loc.y)))
 
-struct schematic
-{
-	vec3 size;
-	block_t *blocks;
-};
-
 
 schem *schem_init(vec3 size)
 {
-	schem *ret = (schem*) malloc(sizeof(schem) + sizeof(block_t) * vec3_vol(size));
+	schem *ret = (schem*) malloc(sizeof(schem));
+	ret->blocks = malloc( sizeof(block_t) * vec3_vol(size));
 
 	if (ret == NULL)
 		return ret;
@@ -40,7 +35,6 @@ schem *schem_init(vec3 size)
 
 schem *schem_copy(schem *schem)
 {
-
 	struct schematic *ret = schem_init(schem->size);
 
 	int i;
@@ -56,6 +50,7 @@ schem *schem_copy(schem *schem)
 
 void schem_kill(schem *schem)
 {
+	free(schem->blocks);
 	free(schem);
 }
 
@@ -141,18 +136,20 @@ schem *schem_stacking_resize(schem *schem, vec3 size) {
 
 schem *schem_flip(schem *schem, vec3 dirs)
 {
+	vec3 offset;
 	struct schematic *ret = schem_init(schem->size);
 	size_t src_index, dst_index;
+
 	if (ret == NULL)
 		return ret;
 
-
-	dirs = vec3_mod(dirs, vec3_init( 2,  2,  2));
-	dirs = vec3_mul(dirs, vec3_init(-1, -1, -1));
+	dirs = vec3_mod(dirs, vec3_init(2,  2,  2));
+	offset = vec3_mul(dirs, vec3_sub(schem->size, vec3_init(1, 1, 1)));
+	dirs = vec3_add(vec3_scale(dirs, -2), vec3_init(1, 1, 1));
 
 	SCHEM_YZX_LOOP(schem->size,
 				   src_index = YZX_INDEX(schem->size, pos);
-				   dst_index = YZX_INDEX(schem->size, vec3_mul(pos, dirs));
+				   dst_index = YZX_INDEX(schem->size, vec3_add(offset, vec3_mul(pos, dirs)));
 				   ret->blocks[dst_index] = schem->blocks[src_index];
 		);
 
