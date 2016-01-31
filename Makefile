@@ -16,8 +16,8 @@ SRC=src
 INC=src/include
 
 # Source and header files.
-SRC_OBJS=test schematic vec
-INC_OBJS=schematic vec
+SRC_OBJS=test schematic vec schemfile block
+INC_OBJS=schematic vec schemfile block
 
 OBJ_PATHS=$(addprefix $(SRC)/, $(addsuffix .o, $(SRC_OBJS)))
 SRC_PATHS=$(addprefix $(SRC)/, $(addsuffix .cpp, $(SRC_OBJS)))
@@ -25,7 +25,7 @@ INC_PATHS=$(addprefix $(INC)/, $(addsuffix .h, $(INC_OBJS)))
 
 
 # Compiler flags.
-CCFLAGS=-I$(INC) -g -Wall -Wextra -Wno-unused-parameter -Wformat -Wpedantic 
+CCFLAGS=-I$(INC) -g -Wall -Wextra -Wno-unused-parameter -Wformat -Wpedantic --std=gnu99
 
 
 # Default rule for compiling object files.
@@ -35,7 +35,7 @@ CCFLAGS=-I$(INC) -g -Wall -Wextra -Wno-unused-parameter -Wformat -Wpedantic
 
 # Rule for compiling main executable.
 test: $(OBJ_PATHS)
-	$(CC) -g $^ -o $@
+	$(CC) -static -L/usr/local/include/nbt/ -g $^  -lnbt -lz -o $@
 
 # Main rule.
 all: test

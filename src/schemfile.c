@@ -7,9 +7,13 @@ void nbt_save_schem(nbt_node *nbt, schem *sch)
 	struct nbt_byte_array barray, darray;
 
 	size_t vol, index;
-	int8_t blockid, data;
 
-	vol = (size_t)schem_volume(sch);
+	vol = (size_t)schem_vol(sch);
+
+	nbt_find_by_name(nbt,  "Width")->payload.tag_short = schem_size(sch).x;
+	nbt_find_by_name(nbt, "Height")->payload.tag_short = schem_size(sch).y;
+	nbt_find_by_name(nbt, "Length")->payload.tag_short = schem_size(sch).z;
+
 
 	bnode = nbt_find_by_name(nbt, "Blocks");
 	dnode = nbt_find_by_name(nbt,   "Data");
@@ -19,7 +23,6 @@ void nbt_save_schem(nbt_node *nbt, schem *sch)
 
 	if (vol != (size_t)barray.length)
 	{
-		puts("Realloc");
 		barray.length = vol;
 		darray.length = vol;
 
@@ -29,22 +32,18 @@ void nbt_save_schem(nbt_node *nbt, schem *sch)
 
 	for (index = 0; index < vol; ++index)
 	{
-		block = sch->blocks[index];
-		blockid = (int8_t)((block & 0xff00) >> 8);
-		data    = (int8_t)(block & 0x00ff);
+		block = schem_get_index(sch, index);
 
-		barray.data[index] = blockid;
-		darray.data[index] = data;
+		barray.data[index] = block.blockid;
+		darray.data[index] = block.data;
 	}
 }
 
 schem *nbt_load_schem(nbt_node *nbt)
 {
-	nbt_node *bnode, *dnode;
-
-	size_t vol, index;
 	int8_t blockid, data;
-
+	nbt_node *bnode, *dnode;
+	size_t vol, index;
 	schem *ret;
 
 	ret = schem_init(
@@ -52,7 +51,7 @@ schem *nbt_load_schem(nbt_node *nbt)
 				  nbt_find_by_name(nbt, "Height")->payload.tag_short,
 				  nbt_find_by_name(nbt, "Length")->payload.tag_short));
 
-	vol = (size_t)schem_volume(ret);
+	vol = (size_t)schem_vol(ret);
 
 	bnode = nbt_find_by_name(nbt, "Blocks");
 	dnode = nbt_find_by_name(nbt,   "Data");
@@ -61,7 +60,7 @@ schem *nbt_load_schem(nbt_node *nbt)
 	{
 		blockid = bnode->payload.tag_byte_array.data[index];
 		data    = dnode->payload.tag_byte_array.data[index];
-		ret->blocks[index] = (int16_t)((blockid << 8) | data);
+		schem_set_index(ret, index, block_init(blockid, data));
 	}
 
 	return ret;

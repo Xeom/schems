@@ -11,6 +11,11 @@ vec3 vec3_init(int x, int y, int z)
 	return (vec3) {x, y, z};
 }
 
+vec3 vec3_trip(int i)
+{
+	return (vec3) {i, i, i};
+}
+
 vec3 vec3_add(vec3 a, vec3 b)
 {
 	vec3 result;
@@ -136,4 +141,14 @@ int vec3_dot(vec3 a, vec3 b)
 int vec3_vol(vec3 a)
 {
 	return a.x * a.y * a.z;
+}
+
+int vec3_lt(vec3 a, vec3 b)
+{
+	return a.x < b.x && a.y < b.y && a.z < b.z;
+}
+
+int vec3_gt(vec3 a, vec3 b)
+{
+	return a.x > b.x || a.y > b.y || a.z > b.z;
 }

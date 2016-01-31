@@ -4,7 +4,7 @@
 #include "schematic.h"
 
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 
 #define SCHEM_YZX_LOOP(size, code)				\
 	do {										\
@@ -38,17 +38,25 @@ schem *schem_init(vec3 size)
 
 schem *schem_copy(schem *schem)
 {
-	struct schematic *ret = schem_init(schem->size);
+	struct schematic *ret;
 
-	int i;
+	ret = schem_init(schem_size(schem));
 
 	if (ret == NULL)
 		return ret;
 
-	for (i = 0; i < vec3_vol(ret->size); i++)
-		ret->blocks[i] = schem->blocks[i];
+	schem_copy_blocks(ret, schem->blocks);
 
 	return ret;
+}
+
+void schem_copy_blocks(schem *schem, block_t *blocks)
+{
+	size_t vol;
+
+	vol = schem_vol(schem);
+
+	memcpy(schem->blocks, blocks, sizeof(int8_t) * vol);
 }
 
 void schem_kill(schem *schem)
@@ -63,35 +71,45 @@ vec3 schem_size(schem *schem)
 	return schem->size;
 }
 
-int schem_volume(schem *schem)
+int schem_vol(schem *schem)
 {
 	return vec3_vol(schem->size);
 }
 
-
 block_t schem_get(schem *schem, vec3 coord)
 {
-	return schem->blocks[YZX_INDEX(schem->size, coord)];
+	return schem_get_index(schem, YZX_INDEX(schem->size, coord));
 }
 
-int schem_set(schem *schem, vec3 coord, block_t block)
+void schem_set(schem *schem, vec3 coord, block_t block)
 {
-	return schem->blocks[YZX_INDEX(schem->size, coord)] = block;
+	schem_set_index(schem, YZX_INDEX(schem->size, coord), block);
 }
 
+block_t schem_get_index(schem *schem, size_t index)
+{
+	return schem->blocks[index];
+}
+
+void schem_set_index(schem *schem, size_t index, block_t block)
+{
+	schem->blocks[index] = block;
+}
 
 schem *schem_resize(schem *schem, vec3 size)
 {
-	struct schematic *ret = schem_init(size);
-	size_t src_index, dst_index;
+	vec3 wiggle;
+	struct schematic *ret;
+
+	wiggle = vec3_min(size, schem_size(schem));
+
+	ret = schem_init(size);
 
 	if (ret == NULL)
 		return ret;
 
-	SCHEM_YZX_LOOP(size,
-					   src_index = YZX_INDEX(ret->size, pos);
-					   dst_index = YZX_INDEX(size, pos);
-					   ret->blocks[dst_index] = schem->blocks[src_index];
+	SCHEM_YZX_LOOP(wiggle,
+				   schem_set(ret, pos, schem_get(schem, pos));
 		);
 
 	return ret;
@@ -99,31 +117,42 @@ schem *schem_resize(schem *schem, vec3 size)
 
 schem *schem_stack(schem *schem, vec3 counts)
 {
-	vec3 nsize = vec3_mul(schem->size, counts);
-	struct schematic *ret = schem_init(nsize);
+	vec3 size, newsize, src;
+	struct schematic *ret;
+
+	size    = schem_size(schem);
+	newsize = vec3_mul(size, counts);
+
+	ret = schem_init(newsize);
 
 	if (ret == NULL)
 		return ret;
 
-	/* TODO */
+	SCHEM_YZX_LOOP(newsize,
+				   src = vec3_mod(pos, size);
+				   schem_set(ret, pos, schem_get(schem, src));
+		);
+
 	return ret;
 }
 
 schem *schem_shift(schem *schem, vec3 offset)
 {
-	struct schematic *ret = schem_init(schem->size);
-	size_t src_index, dst_index;
+	vec3 size, wiggle, newpos;
+	struct schematic *ret;
+
+	size = schem_size(schem);
+
+	ret = schem_init(size);
 
 	if (ret == NULL)
 		return ret;
 
-	SCHEM_YZX_LOOP(schem->size,
-				   src_index = YZX_INDEX(schem->size, pos);
-				   dst_index = YZX_INDEX(schem->size, vec3_add(pos, offset));
-				   if ((int)dst_index >= vec3_vol(schem->size))
-					   ret->blocks[dst_index] = 0;
-				   else
-					   ret->blocks[dst_index] = schem->blocks[src_index];
+	wiggle = vec3_sub(size, offset);
+
+	SCHEM_YZX_LOOP(wiggle,
+				   newpos = vec3_add(pos, offset);
+				   schem_set(ret, newpos, schem_get(schem, pos));
 		);
 
 	return ret;
@@ -139,38 +168,28 @@ schem *schem_stacking_resize(schem *schem, vec3 size) {
 
 schem *schem_flip(schem *schem, vec3 dirs)
 {
-	vec3 offset;
-	struct schematic *ret = schem_init(schem->size);
-	size_t src_index, dst_index;
+	vec3 offset, size, newpos;
+	struct schematic *ret;
+
+	size = schem_size(schem);
+
+	ret = schem_init(schem_size(schem));
 
 	if (ret == NULL)
 		return ret;
 
-	dirs = vec3_mod(dirs, vec3_init(2,  2,  2));
-	offset = vec3_mul(dirs, vec3_sub(schem->size, vec3_init(1, 1, 1)));
-	dirs = vec3_add(vec3_scale(dirs, -2), vec3_init(1, 1, 1));
+	dirs   = vec3_mod(dirs, vec3_trip(2));
+	offset = vec3_mul(dirs, vec3_sub(size, vec3_trip(1)));
+	dirs   = vec3_add(vec3_scale(dirs, -2), vec3_trip(1));
 
 	SCHEM_YZX_LOOP(schem->size,
-				   src_index = YZX_INDEX(schem->size, pos);
-				   dst_index = YZX_INDEX(schem->size, vec3_add(offset, vec3_mul(pos, dirs)));
-				   ret->blocks[dst_index] = schem->blocks[src_index];
+				   newpos = vec3_add(offset, vec3_mul(pos, dirs));
+				   schem_set(ret, newpos, schem_get(schem, pos));
 		);
 
 	return ret;
 }
 
-block_t block_rotate(block_t block, vec3 dirs)
-{
-	int8_t blockid = (int8_t)(block & 0xff00 >> 8);
-	int8_t data    = (int8_t)(block & 0x000f);
-
-	switch (blockid)
-	{
-		/* Do this part when without means to commit suicide */
-	}
-
-	return (blockid << 8) | data;
-}
 
 void rotate_2d(int *x, int *y, int dir)
 {
@@ -219,98 +238,64 @@ vec3 rotate_3d(vec3 vec, vec3 dirs)
 
 schem *schem_rotate(schem *schem, vec3 dirs)
 {
-	vec3 size, newsize, offset;
+	vec3 size, newsize, offset, newpos;
+	struct schematic *ret;
+
 	size = schem_size(schem);
+
 	/* The shape of the new schematic is obtained via rotation */
 	newsize = rotate_3d(size, dirs);
 	offset  = vec3_abs(vec3_min(vec3_add(newsize, vec3_init(1, 1, 1)), vec3_init(0, 0, 0)));
 	newsize = vec3_abs(newsize);
-	struct schematic *ret = schem_init(newsize);
 
-	/* These three variables represents what happens in the new
-	   schematic when you move in the x y or z directions in the
-	   old one.
-	*/
-	vec3 newpos;
-	pvec(rotate_3d(vec3_init(1, 2, 3), dirs));
-	pvec(dirs);
-	pvec(size);
-	pvec(newsize);
+	ret = schem_init(newsize);
+
+	if (ret == NULL)
+		return ret;
+
 	SCHEM_YZX_LOOP(size,
 				   newpos = vec3_add(offset, rotate_3d(pos, dirs));
-//				   fputs("\n\n\n\nnewsize", stderr);pvec(newsize); fputs("newpos", stderr); pvec(newpos); fputs("\nsize", stderr); pvec(size);fputs("pos",stderr);pvec(pos);
-//				   fprintf(stderr, "%d %d", vec3_vol(newsize), YZX_INDEX(newsize, newpos));
-				   ret->blocks[YZX_INDEX(newsize, newpos)] = schem->blocks[YZX_INDEX(size, pos)];
+				   schem_set(ret, newpos, block_rotate(schem_get(schem, pos), dirs));
 		);
-//	vec3 incrx = vec3_init(1, 0, 0);
-//	vec3 incry = vec3_init(0, 1, 0);
-//	vec3 incrz = vec3_init(0, 0, 1);
-//
-//	incrx = rotate_3d(incrx, dirs);
-//	incry = rotate_3d(incry, dirs);
-//	incrz = rotate_3d(incrz, dirs);
-//
-//	for (oldpos.y = 0; oldpos.y < size.y; ++(oldpos.y))
-//	{
-//		newpos = vec3_add(newpos, incry);
-//		for (oldpos.z = 0; oldpos.z < size.z; ++(oldpos.z))
-//		{
-//
-//			newpos = vec3_add(newpos, incrz);
-//			for (oldpos.x = 0; oldpos.x < size.x; ++(oldpos.x))
-//			{
-//				newpos = vec3_add(newpos, incrx);
-//				newpos = vec3_mod(newpos, newsize);
-//				/* If current index is negative make it positive */
-//				vec3 offnewpos = vec3_add(newpos, offset);
-//
-//				/* Add the block to the new schematic */
-//				fputs("Offset ", stderr); pvec(offset);
-//				fputs("Position ", stderr);
-//				pvec(offnewpos);
-//
-//				newschem->blocks[YZX_INDEX(newsizeabs, offnewpos)] =
-//					block_rotate(schem->blocks[YZX_INDEX(
-//						size, oldpos)], dirs);
-//
-//			}
-//		}
-//	}
 
 	return ret;
 }
 
-void schem_fill(schem *schem, vec3 offset, vec3 size, block_t block)
+void schem_fill(schem *schem, vec3 offset, vec3 area, block_t block)
 {
-	vec3 abspos;
- 
+	vec3 offpos, size;
+
+	size = schem_size(schem);
+
 	/* Get absolute values of input vectors */
 	offset = vec3_abs(offset);
-	size   = vec3_abs(size);
+	area   = vec3_abs(area);
 
 	/* Ensure the region to be filled is contained within the schematic */
-	offset = vec3_min(schem->size, offset);
-	size   = vec3_min(vec3_sub(schem->size, offset), size);
+	offset = vec3_min(size, offset);
+	area   = vec3_min(vec3_sub(size, offset), area);
 
 	/* Fill shit yo */
-	SCHEM_YZX_LOOP(size,
-				   abspos = vec3_add(pos, offset);
-				   schem->blocks[YZX_INDEX(schem->size, abspos)] = block;
+	SCHEM_YZX_LOOP(area,
+				   offpos = vec3_add(pos, offset);
+				   schem_set(schem, offpos, block);
 		);
 }
 
 void schem_insert(schem *into, vec3 offset, schem *from)
 {
-	vec3 wiggle;
+	vec3 wiggle, isize, fsize;
+
+	isize = schem_size(into);
+	fsize = schem_size(from);
 
 	offset = vec3_abs(offset);
-	offset = vec3_min(into->size, offset);
+	offset = vec3_min(isize, offset);
 
-	wiggle = vec3_min(from->size, vec3_sub(into->size, offset));
+	wiggle = vec3_min(fsize, vec3_sub(isize, offset));
 
 	SCHEM_YZX_LOOP(wiggle,
-				   into->blocks[YZX_INDEX(into->size, pos)] =
-				   from->blocks[YZX_INDEX(from->size, vec3_add(offset, pos))];
+				   schem_set(into, pos, schem_get(from, vec3_add(offset, pos)));
 		);
 }
 

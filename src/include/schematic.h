@@ -4,10 +4,10 @@
 #ifndef SCHEMATIC_H
 #define SCHEMATIC_H
 
-#include <stdint.h>
 #include "vec.h"
+#include "block.h"
 
-typedef int16_t block_t;
+#include <stddef.h>
 
 struct schematic
 {
@@ -19,17 +19,21 @@ typedef struct schematic schem;
 
 schem *schem_init(vec3 size);
 schem *schem_copy(schem *schem);
+void schem_copy_blocks(schem *schem, block_t *blocks);
 void schem_kill(schem *schem);
 
 vec3 schem_size(schem *schem);
-int schem_volume(schem *schem);
+int schem_vol(schem *schem);
 
 
 schem *schem_from_file(const char *path);
 int schem_to_file(schem *schem);
 
 block_t schem_get(schem *schem, vec3 coord);
-int schem_set(schem *schem, vec3 coord, block_t block);
+void schem_set(schem *schem, vec3 coord, block_t block);
+
+block_t schem_get_index(schem *schem, size_t index);
+void schem_set_index(schem *schem, size_t index, block_t block);
 
 schem *schem_resize(schem *schem, vec3 size);
 schem *schem_stack(schem *schem, vec3 counts);
