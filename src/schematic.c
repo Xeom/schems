@@ -4,6 +4,7 @@
 #include "schematic.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #define SCHEM_YZX_LOOP(size, code)				\
 	do {										\
@@ -19,6 +20,8 @@
 
 #define YZX_INDEX(size, loc) (loc.x + size.x*(loc.z + size.z*(loc.y)))
 
+/* Debugging n shit */
+#define pvec(vec) fprintf(stderr, "{x %d y %d z %d}\n", vec.x, vec.y, vec.z)
 
 schem *schem_init(vec3 size)
 {
@@ -216,55 +219,65 @@ vec3 rotate_3d(vec3 vec, vec3 dirs)
 
 schem *schem_rotate(schem *schem, vec3 dirs)
 {
-	vec3 size = schem_size(schem);
+	vec3 size, newsize, offset;
+	size = schem_size(schem);
 	/* The shape of the new schematic is obtained via rotation */
-	vec3 newsize = rotate_3d(size, dirs);
-	/* Get rid of negatives */
-	vec3 newsizeabs = vec3_abs(newsize);
-
-	struct schematic *newschem = schem_init(newsizeabs);
+	newsize = rotate_3d(size, dirs);
+	offset  = vec3_abs(vec3_min(vec3_add(newsize, vec3_init(1, 1, 1)), vec3_init(0, 0, 0)));
+	newsize = vec3_abs(newsize);
+	struct schematic *ret = schem_init(newsize);
 
 	/* These three variables represents what happens in the new
 	   schematic when you move in the x y or z directions in the
 	   old one.
 	*/
-	vec3 newpos = vec3_init(0, 0, 0);
-	vec3 oldpos = vec3_init(0, 0, 0);
+	vec3 newpos;
+	pvec(rotate_3d(vec3_init(1, 2, 3), dirs));
+	pvec(dirs);
+	pvec(size);
+	pvec(newsize);
+	SCHEM_YZX_LOOP(size,
+				   newpos = vec3_add(offset, rotate_3d(pos, dirs));
+//				   fputs("\n\n\n\nnewsize", stderr);pvec(newsize); fputs("newpos", stderr); pvec(newpos); fputs("\nsize", stderr); pvec(size);fputs("pos",stderr);pvec(pos);
+//				   fprintf(stderr, "%d %d", vec3_vol(newsize), YZX_INDEX(newsize, newpos));
+				   ret->blocks[YZX_INDEX(newsize, newpos)] = schem->blocks[YZX_INDEX(size, pos)];
+		);
+//	vec3 incrx = vec3_init(1, 0, 0);
+//	vec3 incry = vec3_init(0, 1, 0);
+//	vec3 incrz = vec3_init(0, 0, 1);
+//
+//	incrx = rotate_3d(incrx, dirs);
+//	incry = rotate_3d(incry, dirs);
+//	incrz = rotate_3d(incrz, dirs);
+//
+//	for (oldpos.y = 0; oldpos.y < size.y; ++(oldpos.y))
+//	{
+//		newpos = vec3_add(newpos, incry);
+//		for (oldpos.z = 0; oldpos.z < size.z; ++(oldpos.z))
+//		{
+//
+//			newpos = vec3_add(newpos, incrz);
+//			for (oldpos.x = 0; oldpos.x < size.x; ++(oldpos.x))
+//			{
+//				newpos = vec3_add(newpos, incrx);
+//				newpos = vec3_mod(newpos, newsize);
+//				/* If current index is negative make it positive */
+//				vec3 offnewpos = vec3_add(newpos, offset);
+//
+//				/* Add the block to the new schematic */
+//				fputs("Offset ", stderr); pvec(offset);
+//				fputs("Position ", stderr);
+//				pvec(offnewpos);
+//
+//				newschem->blocks[YZX_INDEX(newsizeabs, offnewpos)] =
+//					block_rotate(schem->blocks[YZX_INDEX(
+//						size, oldpos)], dirs);
+//
+//			}
+//		}
+//	}
 
-	vec3 absnewpos;
-
-	vec3 incrx = vec3_init(1, 0, 0);
-	vec3 incry = vec3_init(0, 1, 0);
-	vec3 incrz = vec3_init(0, 0, 1);
-
-	incrx = rotate_3d(incrx, dirs);
-	incry = rotate_3d(incry, dirs);
-	incrz = rotate_3d(incrz, dirs);
-
-	for (oldpos.y = 0; oldpos.y < size.y; ++(oldpos.y))
-	{
-		newpos = vec3_add(newpos, incry);
-		for (oldpos.z = 0; oldpos.z < size.z; ++(oldpos.z))
-		{
-
-			newpos = vec3_add(newpos, incrz);
-			for (oldpos.x = 0; oldpos.x < size.x; ++(oldpos.x))
-			{
-				newpos = vec3_add(newpos, incrx);
-				newpos = vec3_mod(newpos, newsize);
-				/* If current index is negative make it positive */
-				absnewpos = vec3_mod(newpos, newsizeabs);
-
-				/* Add the block to the new schematic */
-				newschem->blocks[YZX_INDEX(newsizeabs, absnewpos)] =
-					block_rotate(schem->blocks[YZX_INDEX(
-						size, oldpos)], dirs);
-
-			}
-		}
-	}
-
-	return newschem;
+	return ret;
 }
 
 void schem_fill(schem *schem, vec3 offset, vec3 size, block_t block)
