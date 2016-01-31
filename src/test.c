@@ -62,16 +62,12 @@ int main(int argc, char *argv[])
 			abort();
 		}
 	}
-	puts("------------------------");
-	FILE *infile = fopen("out2.schematic", "r");
-	nbt_node *nbt = nbt_parse_file(infile);
-	fclose(infile);
+	fputs("------------------------\n", stderr);
+	nbt_node *nbt = nbt_parse_file(stdin);
 	schem    *sch = nbt_load_schem(nbt);
 	sch = schem_flip(sch, flip_vec);
 	nbt_save_schem(nbt, sch);
-	FILE *outfile = fopen("out2.schematic", "w");
-	nbt_dump_file(nbt, outfile, STRAT_INFLATE);
-	fclose(outfile);
+	nbt_dump_file(nbt, stdout, STRAT_INFLATE);
 	schem_kill(sch);
 	nbt_free(nbt);
 }
