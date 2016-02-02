@@ -117,11 +117,19 @@ schem *schem_resize(schem *schem, vec3 size)
 
 schem *schem_stack(schem *schem, vec3 counts)
 {
-	vec3 size, newsize, src;
+	vec3 newsize;
+
+	newsize = vec3_mul(schem_size(schem), counts);
+
+	return schem_stacking_resize(schem, newsize);
+}
+
+
+schem *schem_stacking_resize(schem *schem, vec3 newsize) {
+	vec3 size, src;
 	struct schematic *ret;
 
 	size    = schem_size(schem);
-	newsize = vec3_mul(size, counts);
 
 	ret = schem_init(newsize);
 
@@ -156,14 +164,6 @@ schem *schem_shift(schem *schem, vec3 offset)
 		);
 
 	return ret;
-}
-
-schem *schem_stacking_resize(schem *schem, vec3 size) {
-
-
-	return NULL; /* TODO */
-
-
 }
 
 schem *schem_flip(schem *schem, vec3 dirs)
