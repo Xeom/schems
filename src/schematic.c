@@ -2,7 +2,6 @@
  */
 
 #include "schematic.h"
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,9 +18,6 @@
 	} while (0)
 
 #define YZX_INDEX(size, loc) (loc.x + size.x*(loc.z + size.z*(loc.y)))
-
-/* Debugging n shit */
-#define pvec(vec) fprintf(stderr, "{x %d y %d z %d}\n", vec.x, vec.y, vec.z)
 
 schem *schem_init(vec3 size)
 {
@@ -125,7 +121,8 @@ schem *schem_stack(schem *schem, vec3 counts)
 }
 
 
-schem *schem_stacking_resize(schem *schem, vec3 newsize) {
+schem *schem_stacking_resize(schem *schem, vec3 newsize)
+{
 	vec3 size, src;
 	struct schematic *ret;
 
@@ -241,11 +238,15 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 	vec3 size, newsize, offset, newpos;
 	struct schematic *ret;
 
+	dirs = vec3_mod(dirs, vec3_trip(4));
+
+	pvec(dirs);
+
 	size = schem_size(schem);
 
 	/* The shape of the new schematic is obtained via rotation */
 	newsize = rotate_3d(size, dirs);
-	offset  = vec3_abs(vec3_min(vec3_add(newsize, vec3_init(1, 1, 1)), vec3_init(0, 0, 0)));
+	offset  = vec3_abs(vec3_min(vec3_add(newsize, vec3_trip(1)), vec3_trip(0)));
 	newsize = vec3_abs(newsize);
 
 	ret = schem_init(newsize);
