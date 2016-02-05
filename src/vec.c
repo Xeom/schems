@@ -63,6 +63,14 @@ vec3 vec3_mod(vec3 a, vec3 b)
 	result.y = a.y % b.y;
 	result.z = a.z % b.z;
 
+	if (result.x < 0)
+		result.x += b.x;
+
+	if (result.y < 0)
+		result.y += b.y;
+
+	if (result.z < 0)
+		result.z += b.z;
 	return result;
 }
 
