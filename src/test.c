@@ -1,107 +1,106 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "schematic.h"
 #include "vec.h"
 #include "schemfile.h"
 
-#define XYZ_SWITCH(chr, x, y, z)	\
-char c = chr;						\
-switch (c) {						\
-	case 'x':case 'X': x break;	\
-	case 'y':case 'Y': y break;	\
-	case 'z':case 'Z': z break;	\
-default:fprintf(stderr, "! '%c' isn't a fukkin direction. Try x, y or z.\n", c);abort();}
+typedef enum
+{
+	rotate,
+	flip,
+	stack,
+	resize,
+	fill,
 
+	num_ops
+} op;
+
+#define is_op(v) (v < num_ops)
 
 int main(int argc, char *argv[])
 {
 
 	nbt_node *nbt = nbt_parse_file(stdin);
 	schem    *sch = nbt_load_schem(nbt);
+	schem    *schnew;
 
 	fputs("Doing the following shit\n", stderr);
 	fputs("------------------------\n", stderr);
 
+	struct option longopts[] =
+	{
+		{"rotate", required_argument, NULL, rotate},
+		{"flip",   required_argument, NULL, flip},
+		{"stack",  required_argument, NULL, stack},
+		{"resize", required_argument, NULL, resize},
+		{"fill",   required_argument, NULL, fill}
+	};
+
 	char opt;
 	opterr = 0;
-	while ((opt = getopt(argc, argv, "f:r:")) != -1)
+	while ((opt = getopt_long(argc, argv, "", longopts, NULL)) != -1)
 	{
-		if (opt == 'f')
+
+		vec3 vec;
+
+		if (opt == stack)
+			vec = vec3_init(1, 1, 1);
+
+		else
+			vec = vec3_init(0, 0, 0);
+
+		if (is_op(opt))
 		{
-			vec3 flip_vec = vec3_init(0, 0, 0);
-			int i = -1;
-			while (optarg[++i])
-			{
-				XYZ_SWITCH(optarg[i],
-						   /* x */
-						   fputs("- Flip on X axis\n", stderr);
-						   flip_vec.x = 1;,
-						   /* y */
-						   fputs("- Flip on Y axis\n", stderr);
-						   flip_vec.y = 1;,
-						   /* z */
-						   fputs("- Flip on Z axis\n", stderr);
-						   flip_vec.z = 1;
-					);
-			}
-			sch = schem_flip(sch, flip_vec);
+			int i;
+
+			if (sscanf(optarg, "%*[^x]x%d", &i) == 1 || sscanf(optarg, "x%d", &i) == 1)
+				vec.x = i;
+			if (sscanf(optarg, "%*[^y]y%d", &i) == 1 || sscanf(optarg, "y%d", &i) == 1)
+				vec.y = i;
+			if (sscanf(optarg, "%*[^z]z%d", &i) == 1 || sscanf(optarg, "z%d", &i) == 1)
+				vec.z = i;
 		}
 
-		else if (opt == 'r')
+		if (opt == stack)
 		{
-			vec3 rot_vec = vec3_init(0, 0, 0);
-			int i = -1;
-			while (optarg[++i])
-			{
-				if (optarg[i] == 'c')
-				{
-					if (!optarg[++i])
-						break;
-
-					XYZ_SWITCH(optarg[i],
-							   /* x */
-							   fputs("- Rotate counter clockwise about X axis\n", stderr);
-							   --(rot_vec.x);,
-							   /* y */
-							   fputs("- Rotate counter clockwise about Y axis\n", stderr);
-							   --(rot_vec.y);,
-							   /* z */
-							   fputs("- Rotate counter clockwise about Z axis\n", stderr);
-							   --(rot_vec.z);
-						);
-				}
-				else
-				{
-					XYZ_SWITCH(optarg[i],
-							   /* x */
-							   fputs("- Rotate clockwise about X axis\n", stderr);
-							   ++(rot_vec.x);,
-							   /* y */
-							   fputs("- Rotate clockwise about Y axis\n", stderr);
-							   ++(rot_vec.y);,
-							   /* z */
-							   fputs("- Rotate clockwise about Z axis\n", stderr);
-							   ++(rot_vec.z);
-						);
-				}
-			}
-			sch = schem_rotate(sch, rot_vec);
+			fprintf(stderr, "- Stacking { %d  %d  %d } times apparently\n", vec.x, vec.y, vec.z);
+			schnew = schem_stack(sch, vec);
+			schem_kill(sch);
+			sch = schnew;
 		}
+
+		else if (opt == flip)
+		{
+			fprintf(stderr, "- Reflecting stuff by vector { %d  %d  %d }\n", vec.x, vec.y, vec.z);
+			schnew = schem_flip(sch, vec);
+			schem_kill(sch);
+			sch = schnew;
+		}
+
+		else if (opt == rotate)
+		{
+			fprintf(stderr, "- Spinnin this shit by vector { %d  %d  %d }\n", vec.x, vec.y, vec.z);
+			schnew = schem_rotate(sch, vec);
+			schem_kill(sch);
+			sch = schnew;
+		}
+
+//		else if (opt == fill)
+//		{
+			
+
 		else if (opt == '?')
 		{
-			switch (optopt)
-			{
-			case 'r':
-			case 'f':
-				fprintf(stderr, "! You fucked up -%c you idiot. Prolly needs an option or smthn.\n", optopt);
-				abort();
-				break;
-			default:
-				fprintf(stderr, "! Yea I dunno what you think -%c is, but fuck off with it aight?\n", optopt);
-				abort();
-			}
+			if (is_op(optopt))
+				fprintf(stderr, "! Needs more fukkin arguments mate.\n");
+
+			else
+				fprintf(stderr, "! Fuck you think that op is?\n");
+
+			abort();
 		}
 
 		else
