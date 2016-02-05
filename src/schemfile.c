@@ -4,7 +4,7 @@ void nbt_save_schem(nbt_node *nbt, schem *sch)
 {
 	block_t block;
 	nbt_node *bnode, *dnode;
-	struct nbt_byte_array barray, darray;
+	struct nbt_byte_array *barray, *darray;
 
 	size_t vol, index;
 
@@ -14,28 +14,27 @@ void nbt_save_schem(nbt_node *nbt, schem *sch)
 	nbt_find_by_name(nbt, "Height")->payload.tag_short = schem_size(sch).y;
 	nbt_find_by_name(nbt, "Length")->payload.tag_short = schem_size(sch).z;
 
-
 	bnode = nbt_find_by_name(nbt, "Blocks");
 	dnode = nbt_find_by_name(nbt,   "Data");
 
-	barray = bnode->payload.tag_byte_array;
-	darray = dnode->payload.tag_byte_array;
+	barray = &bnode->payload.tag_byte_array;
+	darray = &dnode->payload.tag_byte_array;
 
-	if (vol != (size_t)barray.length)
+	if (vol != (size_t)barray->length)
 	{
-		barray.length = vol;
-		darray.length = vol;
+		barray->length = vol;
+		darray->length = vol;
 
-		barray.data = realloc(barray.data, vol);
-		darray.data = realloc(darray.data, vol);
+		barray->data = realloc(barray->data, vol);
+		darray->data = realloc(darray->data, vol);
 	}
 
 	for (index = 0; index < vol; ++index)
 	{
 		block = schem_get_index(sch, index);
 
-		barray.data[index] = block.blockid;
-		darray.data[index] = block.data;
+		barray->data[index] = block.blockid;
+		darray->data[index] = block.data;
 	}
 }
 
