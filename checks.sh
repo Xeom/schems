@@ -1,3 +1,24 @@
+function err_print
+{
+	echo -e "\e[31m [\e[91m!\e[31m]\e[0m" $* 1>&2
+}
+
+function cmd_print
+{
+	echo -e "\e[33m[" $* "]\e[0m"
+}
+
+function run_test_cmd
+{
+	$* 2>/dev/null
+	errcode=$?
+	if [[ $errcode == 139 ]]; then
+		err_print Running $(cmd_print $*) Caused a segfault
+	elif [[ $errcode != 0 ]]; then
+		err_print Running $(cmd_print $*) Returned error code $errcode
+	fi
+}
+
 function test_eq
 {
 	ops1=$1
@@ -8,19 +29,19 @@ function test_eq
 	done | sort | uniq | \
 
 		while read -r flags; do
-
 			flags1=$(echo $flags | cut -d: -f1)
 			flags2=$(echo $flags | cut -d: -f2)
 
-			hash1=$(cat test.schematic | ./test $flags1 2>/dev/null | shasum)
-			hash2=$(cat test.schematic | ./test $flags2 2>/dev/null | shasum)
+			hash1=$(cat test.schematic | run_test_cmd "./test $flags1" | shasum)
+			hash2=$(cat test.schematic | run_test_cmd "./test $flags2" | shasum)
 
 			if [[ $hash1 != $hash2 ]]; then
-				echo [!] [$flags1] did not produce the same results as [$flags2]
+				err_print $(cmd_print $flags1) did not produce the same results as $(cmd_print $flags2)
 			fi
 		done
-
 }
+
+make -q || err_print "Binary not up-to-date"
 
 test_eq "--rotate x1 --rotate x1 --rotate x1" \
 		"--rotate x3"
@@ -34,8 +55,12 @@ test_eq "--rotate x2y2z2"  \
 test_eq "--flip x1y1z1 --rotate x4y4z4 --flip x1y1z1" \
 		""
 
+test_eq "--flip y1x1" \
+		"--rotate z2"
+
 test_eq "--flip x1y1" \
 		"--rotate x2y2"
 
 test_eq "--flip y1 --stack y2" \
 		"--stack y2 --flip y1"
+
