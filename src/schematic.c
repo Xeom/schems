@@ -239,8 +239,7 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 	struct schematic *ret;
 
 	dirs = vec3_mod(dirs, vec3_trip(4));
-
-	pvec(dirs);
+   
 
 	size = schem_size(schem);
 
