@@ -226,9 +226,9 @@ void rotate_2d(int *x, int *y, int dir)
 
 vec3 rotate_3d(vec3 vec, vec3 dirs)
 {
-	rotate_2d(&vec.z, &vec.y, dirs.x);
-	rotate_2d(&vec.x, &vec.z, dirs.y);
-	rotate_2d(&vec.x, &vec.y, dirs.z);
+	rotate_2d(&vec.z,  &vec.y,  dirs.x);
+	rotate_2d(&vec.x,  &vec.z,  dirs.y);
+	rotate_2d(&vec.y,  &vec.x,  dirs.z);
 
 	return vec;
 }
@@ -239,7 +239,6 @@ schem *schem_rotate(schem *schem, vec3 dirs)
 	struct schematic *ret;
 
 	dirs = vec3_mod(dirs, vec3_trip(4));
-   
 
 	size = schem_size(schem);
 
