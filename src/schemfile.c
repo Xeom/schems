@@ -65,3 +65,17 @@ schem *nbt_load_schem(nbt_node *nbt)
 	return ret;
 }
 
+void file_save_schem(FILE *file, schem *sch)
+{
+	nbt_node *nbt = nbt_parse_file(file);
+	nbt_save_schem(nbt, sch);
+	nbt_dump_file(nbt, file, STRAT_INFLATE);
+}
+
+schem *file_load_schem(FILE *file)
+{
+	nbt_node *nbt = nbt_parse_file(file);
+	schem    *sch = nbt_load_schem(nbt);
+
+	return sch;
+}
