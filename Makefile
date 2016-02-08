@@ -10,7 +10,6 @@ LD=ld
 AR=ar
 LN=ln
 
-
 # Directories.
 SRC=src
 INC=src/include
@@ -30,7 +29,7 @@ CCFLAGS=-I$(INC) -g -Wall -Wextra -Wno-unused-parameter -Wformat -Wpedantic --st
 
 # Default rule for compiling object files.
 %.o: %.c $(INC_PATHS)
-	$(CC) $(CCFLAGS) -c $< -o $@
+	$(CC) $(CCFLAGS) -fPIC -c $< -o $@
 
 
 # Rule for compiling main executable.
@@ -39,6 +38,11 @@ test: $(OBJ_PATHS)
 
 # Main rule.
 all: test
+
+# Lib shit yo
+lib.so: $(OBJ_PATHS)
+	$(CC) -shared -fPIC -L/usr/local/include/nbt -g $^ -lnbt -lz -o $@
+	cp $@ python/lib.so
 
 # Clean repo.
 clean:
