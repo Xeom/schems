@@ -1,4 +1,4 @@
-from structs import schem_p
+from structs import *
 from share   import lib
 
 lib.nbt_save_schem.argtypes = [nbt_p, schem_p]
