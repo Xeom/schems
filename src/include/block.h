@@ -6,8 +6,8 @@
 
 struct block
 {
-	int8_t blockid;
-	int8_t data;
+	uint8_t blockid;
+	uint8_t data;
 };
 
 typedef struct block block_t;
