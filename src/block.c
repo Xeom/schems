@@ -2,6 +2,19 @@
 
 /* I am so, so sorry. */
 
+#define SWITCH_WOOD(blk, code)					\
+case 17:case 162:								\
+	dir = blk.data & 0x06 >> 2;				\
+	blk.data -= dir << 2;						\
+	code										\
+	blk.data |= dir << 2;						\
+	break;
+
+#define WOOD_UPDOWN     0x00
+#define WOOD_EASTWEST   0x01
+#define WOOD_NORTHSOUTH 0x02
+#define WOOD_WTF        0x03
+
 #define SWITCH_TORCH(blk, code)				\
 case 75:case 76:case 50:						\
 	dir = blk.data;							\
@@ -77,14 +90,12 @@ block_t block_rotate_x(block_t block)
 
 	switch (block.blockid)
 	{
-	case 17:
-	case 162:
-		if ((block.data & 0x06) == 1)
-			block.data += 4;
-		else if ((block.data & 0x06) == 2)
-			block.data -= 4;
-
-		break;
+	SWITCH_WOOD(block,
+	            if (dir == WOOD_UPDOWN)
+		            dir = WOOD_NORTHSOUTH;
+	            else if (dir == WOOD_NORTHSOUTH)
+		            dir = WOOD_UPDOWN;
+		)
 
 	SWITCH_TORCH(block,
 	             if (dir == TORCH_NORTH)
