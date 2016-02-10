@@ -109,22 +109,23 @@ block_t block_rotate_x(block_t block)
 		)
 
 	SWITCH_PISTONS_N_SHIT(block,
-	                      if      (dir == PISTON_DOWN)
-		                      dir = PISTON_NORTH;
-	                      else if (dir == PISTON_NORTH)
+	                      if      (dir == PISTON_NORTH)
 		                      dir = PISTON_UP;
 	                      else if (dir == PISTON_UP)
 		                      dir = PISTON_SOUTH;
 	                      else if (dir == PISTON_SOUTH)
 		                      dir = PISTON_DOWN;
+	                      else if (dir == PISTON_DOWN)
+		                      dir = PISTON_NORTH;
 		)
 
 	SWITCH_STAIR(block,
-	             upside_down = !upside_down;
 	             if      ( upside_down && dir == STAIR_NORTH)
 		             dir = STAIR_SOUTH;
 	             else if (!upside_down && dir == STAIR_SOUTH)
 		             dir = STAIR_NORTH;
+	             if (dir == STAIR_NORTH || dir == STAIR_SOUTH)
+		             upside_down = !upside_down;
 		)
 
 	SWITCH_LEVER(block,
@@ -142,12 +143,145 @@ block_t block_rotate_x(block_t block)
 	return block;
 }
 
+block_t block_rotate_y(block_t block)
+{
+	uint8_t dir, upside_down;
+
+	switch (block.blockid)
+	{
+	SWITCH_WOOD(block,
+	            if (dir == WOOD_EASTWEST)
+		            dir = WOOD_NORTHSOUTH;
+	            else if (dir == WOOD_NORTHSOUTH)
+		            dir = WOOD_EASTWEST;
+		)
+
+	SWITCH_TORCH(block,
+	             if (dir == TORCH_NORTH)
+		             dir = TORCH_WEST;
+	             else if (dir == TORCH_WEST)
+		             dir = TORCH_SOUTH;
+	             else if (dir == TORCH_SOUTH)
+		             dir = TORCH_EAST;
+	             else if (dir == TORCH_EAST)
+		             dir = TORCH_NORTH;
+		)
+
+	SWITCH_PISTONS_N_SHIT(block,
+						  if      (dir == PISTON_NORTH)
+							  dir = PISTON_WEST;
+						  else if (dir == PISTON_WEST)
+							  dir = PISTON_SOUTH;
+						  else if (dir == PISTON_SOUTH)
+							  dir = PISTON_EAST;
+						  else if (dir == PISTON_EAST)
+							  dir = PISTON_NORTH;
+		)
+
+	SWITCH_STAIR(block,
+				 if      (dir == STAIR_NORTH)
+					 dir = STAIR_WEST;
+				 else if (dir == STAIR_WEST)
+					 dir = STAIR_SOUTH;
+				 else if (dir == STAIR_SOUTH)
+					 dir = STAIR_EAST;
+				 else if (dir == STAIR_EAST)
+					 dir = STAIR_NORTH;
+		)
+
+	SWITCH_LEVER(block,
+				 if      (dir == LEVER_NORTH)
+					 dir = LEVER_WEST;
+				 else if (dir == LEVER_WEST)
+					 dir = LEVER_SOUTH;
+				 else if (dir == LEVER_SOUTH)
+					 dir = LEVER_EAST;
+				 else if (dir == LEVER_EAST)
+					 dir = LEVER_NORTH;
+				 else if (dir == LEVER_DOWN_NS)
+					 dir = LEVER_DOWN_EW;
+				 else if (dir == LEVER_DOWN_EW)
+					 dir = LEVER_DOWN_NS;
+				 else if (dir == LEVER_UP_NS)
+					 dir = LEVER_UP_EW;
+				 else if (dir == LEVER_UP_EW)
+					 dir = LEVER_UP_NS;
+		)
+	}
+	return block;
+}
+
+block_t block_rotate_z(block_t block)
+{
+	uint8_t dir, upside_down;
+
+	switch (block.blockid)
+	{
+		SWITCH_WOOD(block,
+					if (dir == WOOD_UPDOWN)
+						dir = WOOD_EASTWEST;
+					else if (dir == WOOD_EASTWEST)
+						dir = WOOD_UPDOWN;
+			)
+
+		SWITCH_TORCH(block,
+					 if (dir == TORCH_WEST)
+						 dir = TORCH_UP;
+					 else if (dir == TORCH_UP)
+						 dir = TORCH_EAST;
+					 else if (dir == TORCH_EAST)
+						 dir = TORCH_DOWN;
+					 else if (dir == TORCH_DOWN)
+						 dir = TORCH_WEST;
+
+			)
+
+			SWITCH_PISTONS_N_SHIT(block,
+					 if (dir == PISTON_WEST)
+						 dir = PISTON_UP;
+					 else if (dir == PISTON_UP)
+						 dir = PISTON_EAST;
+					 else if (dir == PISTON_EAST)
+						 dir = PISTON_DOWN;
+					 else if (dir == PISTON_DOWN)
+						 dir = PISTON_WEST;
+				)
+
+			SWITCH_STAIR(block,
+						 if      ( upside_down && dir == STAIR_EAST)
+							 dir = STAIR_WEST;
+						 else if (!upside_down && dir == STAIR_WEST)
+							 dir = STAIR_EAST;
+						 if (dir == STAIR_EAST || dir == STAIR_WEST)
+							 upside_down = !upside_down;
+				)
+
+			SWITCH_LEVER(block,
+						 if (dir == LEVER_UP_NS || dir == LEVER_UP_EW)
+							 dir = LEVER_WEST;
+						 else if (dir == LEVER_WEST)
+							 dir = LEVER_DOWN_EW;
+						 else if (dir == LEVER_DOWN_EW || dir == LEVER_DOWN_NS)
+							 dir = LEVER_EAST;
+						 else if (dir == LEVER_EAST)
+							 dir = LEVER_UP_EW;
+				)
+			}
+	return block;
+}
 block_t block_rotate(block_t block, vec3 dirs)
 {
-	while (--dirs.x)
-	{
+	dirs = vec3_mod(dirs, vec3_trip(4));
+
+	while (dirs.x--)
 		block = block_rotate_x(block);
-	}
+
+	while (dirs.y--)
+		block = block_rotate_y(block);
+
+	while (dirs.z--)
+		block = block_rotate_z(block);
+
 	return block;
 }
 
